@@ -19,14 +19,14 @@ automatically publish some stuff to Kafka so you don't have to.
 
 Here is what you'll need:
 
-0. Have a look at the
+* Have a look at the
 [source](https://github.com/joshrotenberg/flambo-kafka-streaming-example/blob/master/src/flambo_kafka_streaming_example/core.clj). Clojure's
 thread-first macro combined with flambo's Spark API wrappers make the
 actual processing pretty easy to build up gradually, and you can
 easily comment out steps and see what would happpen without changing
 much. Clojure ftw.
 
-1. Download and run Kafka (and zookeeper) if you don't already have a zookeeper/Kafka
+* Download and run Kafka (and zookeeper) if you don't already have a zookeeper/Kafka
 installation to point at. Follow the
 [quickstart](http://kafka.apache.org/documentation.html#quickstart)
 through step 3 and you should be ready (this example uses the 'test'
@@ -42,24 +42,24 @@ topic).
 > bin/kafka-topics.sh --list --zookeeper localhost:2181
 ```
 
-2. Download and unpack a pre built
+* Download and unpack a pre built
 [Spark](http://spark.apache.org/). You won't need to run anything but
 you will run this self-contained example with bin/spark-submit.
 
-3. Clone this repo, cd in and build an uberjar:
+* Clone this repo, cd in and build an uberjar:
 ```
 > git clone https://github.com/joshrotenberg/flambo-kafka-streaming-example.git
 > cd flambo-kafka-streaming-example/
 > lein uberjar
 ```
 
-4. Now run the example with spark-submit and point it at the class and jar to run:
+* Now run the example with spark-submit and point it at the class and jar to run:
 ```
 <path to spark>/bin/spark-submit --class  flambo_kafka_streaming_example.core \
 target/flambo-kafka-streaming-example-0.1.0-SNAPSHOT-standalone.jar
 ```
 
-5. Be amazed at the amount of stuff scrolling by. To see some of the
+* Be amazed at the amount of stuff scrolling by. To see some of the
 word count output, look for the lines that look like:
 
 ```
