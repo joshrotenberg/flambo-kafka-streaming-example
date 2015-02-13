@@ -7,7 +7,7 @@
   (:require [clojure.string :as s])
   (:gen-class))
 
-(def master "local[*]")
+(def master "local[2]")
 (def app-name "fkse")
 (def conf {})
 (def env {
@@ -33,13 +33,14 @@
 
 
 (defn -main
+  "This is where the magic happens."
   [& args]
   (let [c (-> (conf/spark-conf)
               (conf/master master)
               (conf/app-name "adapters")
               (conf/set "spark.akka.timeout" "300")
               (conf/set-executor-env env))
-        ssc (fs/streaming-context c 2000)
+        ssc (fs/streaming-context c 2000) ;; get a streaming context with a 2 second batch interval
         stream (fs/kafka-stream :streaming-context ssc
                                 :zk-connect "localhost:2181"
                                 :group-id "word-count"
@@ -48,12 +49,17 @@
     ;; in a separate thread, pull lines from data.txt and randomly publish them into kafka
     (future (produce-lines 1000))
     
-    (-> stream
-        (fs/map (memfn _2))
-        (fs/flat-map (f/fn [l] (s/split l #" ")))
-         (fs/map (f/fn [w] [w 1]))
-         (fs/reduce-by-key-and-window (f/fn [x y] (+ x y)) (* 10 60 1000) 2000)
-         (fs/print))
-
+    (-> stream ;; this is our initial stream
+        (fs/map (memfn _2)) ;; kafka messages are a (key, value). this pulls out the value. the
+                            ;; key, if you need it, is in _1
+        (fs/flat-map (f/fn [l] (s/split l #" "))) ;; at this point we have our "line of text and stuff",
+                                                  ;; so split it into words
+        (fs/map (f/fn [w] [w 1])) ;; and for each of those words, get a ["word" 1] pair
+        (fs/reduce-by-key-and-window (f/fn [x y] (+ x y)) (* 10 60 1000) 2000) ;; and reduce them
+                                                                               ;; by key on a sliding
+                                                                               ;; window
+        (fs/print) ;; print out the results
+        )
+    
     (.start ssc)
     (.awaitTermination ssc)))
